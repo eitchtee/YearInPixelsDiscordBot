@@ -13,7 +13,7 @@ EDIT_BUTTON_TEXT = os.environ.get("EDIT_BUTTON_TEXT", "Edit")
 DAILY_MESSAGE_HOUR = int(os.environ.get("DAILY_MESSAGE_HOUR", 23))
 DAILY_MESSAGE_MINUTE = int(os.environ.get("DAILY_MESSAGE_MINUTE", 0))
 DAILY_MESSAGE_SECONDS = int(os.environ.get("DAILY_MESSAGE_SECONDS", 0))
-DAILY_MESSAGE = os.environ.get("DAILY_MESAGE", "{date}\n\nHow was your day?")
+DAILY_MESSAGE = os.environ.get("DAILY_MESSAGE", "{date}\n\nHow was your day?")
 DONE_MESSAGE = os.environ.get(
     "DONE_MESSAGE", "{date} was {button_label} ({button_description})"
 )
