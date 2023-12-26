@@ -270,7 +270,6 @@ class AnsweredDailyQuestionView(discord.ui.View):
 @bot.event
 async def on_ready():
     print(f"We have logged in as {bot.user}")
-    very_useful_task.start()
     daily_question.start()
     monthly_progress.start()
     bot.add_view(DailyQuestionView())
@@ -290,19 +289,6 @@ async def view_year(
         settings.VIEW_COMMAND_RESULT.format(year=year),
         file=discord.File(image, filename="YearInPixels.png"),
     )
-
-
-@tasks.loop(
-    time=datetime.time(
-        hour=settings.DAILY_MESSAGE_HOUR,
-        minute=settings.DAILY_MESSAGE_MINUTE,
-        second=settings.DAILY_MESSAGE_SECONDS,
-        tzinfo=ZoneInfo(settings.TIMEZONE),
-    )
-)
-async def very_useful_task():
-    view = DailyQuestionView()
-    # await ctx.send("Do you want to continue?", view=view)
 
 
 @tasks.loop(
