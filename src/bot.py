@@ -344,10 +344,11 @@ async def monthly_progress():
                 continue
 
 
-@tasks.loop(seconds=1, count=1)
+@tasks.loop(seconds=60)
 async def debug():
     print(monthly_progress.next_iteration)
     print(daily_question.next_iteration)
+    print(datetime.datetime.now(tz=ZoneInfo(settings.TIMEZONE)))
 
 
 bot.run(settings.BOT_TOKEN)
