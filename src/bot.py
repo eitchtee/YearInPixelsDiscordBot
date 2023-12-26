@@ -4,6 +4,7 @@ from string import ascii_uppercase
 from zoneinfo import ZoneInfo
 import logging
 
+import aiohttp
 import discord
 from discord.ext import tasks, commands
 
@@ -295,6 +296,9 @@ async def on_ready():
     logger.info(f"We have logged in as {bot.user}")
     daily_question.start()
     monthly_progress.start()
+
+    if settings.PING:
+        ping.start()
     bot.add_view(DailyQuestionView())
     bot.add_view(AnsweredDailyQuestionView())
     await bot.tree.sync()
@@ -388,6 +392,16 @@ async def monthly_progress():
             except AttributeError:
                 logger.exception("Error when sending message to channel")
                 continue
+
+
+@tasks.loop(seconds=550)
+async def ping():
+    logger.info("Pinging")
+    uptime_kuma_url = settings.PING_URL
+
+    async with aiohttp.ClientSession() as session:
+        async with session.get(uptime_kuma_url) as r:
+            pass
 
 
 bot.run(settings.BOT_TOKEN)

@@ -48,3 +48,6 @@ if BOT_TOKEN is None:
     raise ValueError("DISCORD_TOKEN not set")
 if SPREADSHEET_ID is None:
     raise ValueError("SPREADSHEET_ID not set")
+
+PING = os.environ.get("PING", False)
+PING_URL = os.environ.get("PING_URL", "")
