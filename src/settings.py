@@ -5,11 +5,8 @@ import gspread
 
 TIMEZONE = os.environ.get("TZ", "UTC")
 
-CHANNELS = json.loads(os.environ.get("CHANNELS", "[]"))
-if CHANNELS and not isinstance(CHANNELS, list):
-    CHANNELS = list(CHANNELS)
-elif not CHANNELS:
-    CHANNELS = list()
+CHANNELS = os.environ.get("CHANNELS", None)
+CHANNELS = CHANNELS.split(",") if CHANNELS else []
 
 EDIT_BUTTON_TEXT = os.environ.get("EDIT_BUTTON_TEXT", "Edit")
 
