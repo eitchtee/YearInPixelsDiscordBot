@@ -23,8 +23,7 @@ MONTLY_PROGRESS_TEXT = os.environ.get(
 VIEW_COMMAND_RESULT = os.environ.get(
     "VIEW_COMMAND_RESULT", "Here's your Year In Pixels for the year `{year}`"
 )
-print(os.environ.get(
-        "BUTTONS"))
+
 BUTTONS = json.loads(
     os.environ.get(
         "BUTTONS",
@@ -40,7 +39,7 @@ DATE_FRMT = os.environ.get("DATE_FRMT", "%d/%m/%Y")
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
 SPREADSHEET_ID = os.environ.get("SPREADSHEET_ID")
 
-gc = gspread.service_account(filename="data/credentials.json")
+gc = gspread.service_account(filename="./data/credentials.json")
 
 
 if BOT_TOKEN is None:
