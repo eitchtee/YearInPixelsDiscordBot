@@ -30,6 +30,7 @@ BUTTONS = json.loads(
         '[["😄","Very Happy","#ff6961"],["🙂","Happy","#ffb347"],["😐","Neutral","#fdfd96"],["🙁","Sad","#48d148"],["😞","Very Sad","#779ecb"]]',
     )
 )
+print(BUTTONS)
 DEFAULT_COLOR = os.environ.get("DEFAULT_COLOR", "#d9d9d9")
 MODEL_WORKSHEET_ID = os.environ.get("MODEL_WORKSHEET_ID", 0)
 
