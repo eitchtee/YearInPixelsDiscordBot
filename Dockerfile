@@ -11,7 +11,8 @@ WORKDIR /yearinpixels
 
 COPY ./requirements.txt /
 RUN pip3 install -r /requirements.txt
-COPY ./src /src
+COPY ./src /
+RUN mkdir -p /data
 
 
 ENTRYPOINT [ "python3", "-u", "/src/bot.py" ]
