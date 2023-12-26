@@ -134,12 +134,15 @@ def download(year: int = None):
 
 
 class Date:
-    def __init__(self, msg_id: int | None = None):
+    def __init__(self, msg_id: int | None = None, date: datetime.date = None):
         self.msg_id: int | None = msg_id
-        self.date: datetime.date | None = None
-        self.formatted_date: str | None = None
+        self.date: datetime.date | None = date if date else None
+        self.formatted_date: str | None = (
+            datetime.datetime.strftime(date, settings.DATE_FRMT) if date else None
+        )
 
-        self.get_date()
+        if not date or not self.date or not self.formatted_date:
+            self.get_date()
 
     def get_date(self, new: bool = False) -> None:
         if self.msg_id and not new:
@@ -307,12 +310,32 @@ async def view_year(
     except Exception as err:
         logger.exception("Error when downloading image")
 
-        await interaction.followup.send(f"🚨 Erro!\n\n```{err}```")
+        await interaction.followup.send(f"🚨 Err!\n\n```{err}```")
     else:
         await interaction.followup.send(
             settings.VIEW_COMMAND_RESULT.format(year=year),
             file=discord.File(image, filename="YearInPixels.png"),
         )
+
+
+@tree.command(name="ask", description="Re-ask a date")
+async def ask(interaction: discord.Interaction, date: str):
+    await interaction.response.defer()
+    try:
+        date = datetime.datetime.strptime(date, settings.DATE_FRMT).date()
+        date = Date(date=date)
+    except Exception as err:
+        logger.exception("Error when interpreting date for Ask command")
+
+        await interaction.followup.send(f"🚨 Err!\n\n```{err}```")
+    else:
+        view = DailyQuestionView()
+        msg = await interaction.followup.send(
+            date.daily_question_text,
+            view=view,
+        )
+        date.msg_id = msg.id
+        date.save()
 
 
 @tasks.loop(
