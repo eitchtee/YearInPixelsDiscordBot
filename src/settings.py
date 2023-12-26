@@ -30,6 +30,8 @@ BUTTONS = json.loads(
         '[["😄","Very Happy","#ff6961"],["🙂","Happy","#ffb347"],["😐","Neutral","#fdfd96"],["🙁","Sad","#48d148"],["😞","Very Sad","#779ecb"]]',
     )
 )
+if isinstance(BUTTONS, str):
+    BUTTONS = json.loads(BUTTONS)
 
 print(BUTTONS, type(BUTTONS))
 
