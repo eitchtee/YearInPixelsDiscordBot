@@ -26,15 +26,25 @@ from PIL import Image, ImageChops
 
 import settings
 
-discord.utils.setup_logging(level=logging.INFO, root=True)
+get_logger = logging.getLogger()
+logger = get_logger
+logger.setLevel(logging.INFO)
+
+handler = logging.StreamHandler()
+
+formatter = logging.Formatter(
+    "%(asctime)s :: %(levelname)s :: %(module)s :: %(message)s",
+    datefmt="%d/%m/%Y %H:%M:%S",
+)
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 db = TinyDB("data/db.json")
 Q = Query()
-discord.utils.setup_logging()
 
 intents = discord.Intents.default()
 intents.message_content = True
-bot = commands.Bot(intents=intents, command_prefix="!")
+bot = commands.Bot(intents=intents, command_prefix="!", log_handler=handler)
 tree = bot.tree
 
 
@@ -231,7 +241,7 @@ class SentimentButton(discord.ui.Button):
         try:
             date.answer(answer=self.custom_id)
         except Exception as err:
-            logging.exception("Error when answering Daily Question")
+            logger.exception("Error when answering Daily Question")
 
             await interaction.followup.send(
                 f"🚨 Err\n\n```{err}```",
@@ -279,7 +289,7 @@ class AnsweredDailyQuestionView(discord.ui.View):
 
 @bot.event
 async def on_ready():
-    logging.info(f"We have logged in as {bot.user}")
+    logger.info(f"We have logged in as {bot.user}")
     daily_question.start()
     monthly_progress.start()
     debug.start()
@@ -296,7 +306,7 @@ async def view_year(
     try:
         image = download(year=year)
     except Exception as err:
-        logging.exception("Error when downloading image")
+        logger.exception("Error when downloading image")
 
         await interaction.followup.send(f"🚨 Erro!\n\n```{err}```")
     else:
@@ -324,7 +334,7 @@ async def daily_question():
             date.msg_id = msg.id
             date.save()
         except AttributeError:
-            logging.exception("Error when sending message to channel")
+            logger.exception("Error when sending message to channel")
 
             continue
 
@@ -349,15 +359,15 @@ async def monthly_progress():
                     file=discord.File(image, filename="YearInPixels.png"),
                 )
             except AttributeError:
-                logging.exception("Error when sending message to channel")
+                logger.exception("Error when sending message to channel")
                 continue
 
 
 @tasks.loop(seconds=60)
 async def debug():
-    logging.info(monthly_progress.next_iteration)
-    logging.info(daily_question.next_iteration)
-    logging.info(datetime.datetime.now(tz=ZoneInfo(settings.TIMEZONE)))
+    logger.info(monthly_progress.next_iteration)
+    logger.info(daily_question.next_iteration)
+    logger.info(datetime.datetime.now(tz=ZoneInfo(settings.TIMEZONE)))
 
 
 bot.run(settings.BOT_TOKEN)
