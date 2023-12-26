@@ -279,7 +279,7 @@ class AnsweredDailyQuestionView(discord.ui.View):
 
 @bot.event
 async def on_ready():
-    print(f"We have logged in as {bot.user}")
+    logging.info(f"We have logged in as {bot.user}")
     daily_question.start()
     monthly_progress.start()
     debug.start()
