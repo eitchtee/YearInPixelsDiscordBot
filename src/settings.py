@@ -6,7 +6,7 @@ import gspread
 TIMEZONE = os.environ.get("TZ", "UTC")
 
 CHANNELS = os.environ.get("CHANNELS", None)
-CHANNELS = CHANNELS.split(",") if CHANNELS else []
+CHANNELS = [int(c) for c in CHANNELS.split(",")] if CHANNELS else []
 
 EDIT_BUTTON_TEXT = os.environ.get("EDIT_BUTTON_TEXT", "Edit")
 
