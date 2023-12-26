@@ -292,7 +292,6 @@ async def on_ready():
     logger.info(f"We have logged in as {bot.user}")
     daily_question.start()
     monthly_progress.start()
-    debug.start()
     bot.add_view(DailyQuestionView())
     bot.add_view(AnsweredDailyQuestionView())
     await bot.tree.sync()
@@ -361,13 +360,6 @@ async def monthly_progress():
             except AttributeError:
                 logger.exception("Error when sending message to channel")
                 continue
-
-
-@tasks.loop(seconds=60)
-async def debug():
-    logger.info(monthly_progress.next_iteration)
-    logger.info(daily_question.next_iteration)
-    logger.info(datetime.datetime.now(tz=ZoneInfo(settings.TIMEZONE)))
 
 
 bot.run(settings.BOT_TOKEN)
