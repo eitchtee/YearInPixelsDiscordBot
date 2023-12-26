@@ -226,13 +226,19 @@ class SentimentButton(discord.ui.Button):
         await interaction.response.defer()
         await interaction.message.edit(content="⌛", view=None)
 
-        date.answer(answer=self.custom_id)
-
-        await interaction.followup.edit_message(
-            message_id=interaction.message.id,
-            content=date.get_done_text(button=self),
-            view=AnsweredDailyQuestionView(),
-        )
+        try:
+            date.answer(answer=self.custom_id)
+        except Exception as err:
+            await interaction.followup.send(
+                f"🚨 Erro!\n\n```{err}```",
+                view=AnsweredDailyQuestionView(),
+            )
+        else:
+            await interaction.followup.edit_message(
+                message_id=interaction.message.id,
+                content=date.get_done_text(button=self),
+                view=AnsweredDailyQuestionView(),
+            )
 
 
 class DailyQuestionView(discord.ui.View):
@@ -272,6 +278,7 @@ async def on_ready():
     print(f"We have logged in as {bot.user}")
     daily_question.start()
     monthly_progress.start()
+    debug.start()
     bot.add_view(DailyQuestionView())
     bot.add_view(AnsweredDailyQuestionView())
     await bot.tree.sync()
@@ -282,13 +289,15 @@ async def view_year(
     interaction: discord.Interaction, year: int = datetime.date.today().year
 ):
     await interaction.response.defer()
-
-    image = download(year=year)
-
-    await interaction.followup.send(
-        settings.VIEW_COMMAND_RESULT.format(year=year),
-        file=discord.File(image, filename="YearInPixels.png"),
-    )
+    try:
+        image = download(year=year)
+    except Exception as err:
+        await interaction.followup.send(f"🚨 Erro!\n\n```{err}```")
+    else:
+        await interaction.followup.send(
+            settings.VIEW_COMMAND_RESULT.format(year=year),
+            file=discord.File(image, filename="YearInPixels.png"),
+        )
 
 
 @tasks.loop(
@@ -324,7 +333,6 @@ async def monthly_progress():
     date = Date()
     if date.date.day == 1:
         image = download()
-        print(type(image))
         for channel_id in settings.CHANNELS:
             try:
                 channel = bot.get_channel(channel_id)
@@ -334,6 +342,12 @@ async def monthly_progress():
                 )
             except AttributeError:
                 continue
+
+
+@tasks.loop(seconds=1, count=1)
+async def debug():
+    print(monthly_progress.next_iteration)
+    print(daily_question.next_iteration)
 
 
 bot.run(settings.BOT_TOKEN)
