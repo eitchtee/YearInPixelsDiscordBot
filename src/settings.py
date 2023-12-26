@@ -21,7 +21,7 @@ MONTLY_PROGRESS_TEXT = os.environ.get(
     "MONTLY_PROGRESS_TEXT", "**Here's your year until now ({date})**"
 )
 VIEW_COMMAND_RESULT = os.environ.get(
-    "VIEW_COMMAND_RESULT", "Here's your Year In Pixel for the year `{year}`"
+    "VIEW_COMMAND_RESULT", "Here's your Year In Pixels for the year `{year}`"
 )
 
 BUTTONS = json.loads(

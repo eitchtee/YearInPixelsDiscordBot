@@ -17,6 +17,15 @@ services:
             - PGID=1001
             - PUID=1001
             - TZ=America/Sao_Paulo
+            - CHANNELS=1187954559369359450
+            - EDIT_BUTTON_TEXT=Editar
+            - DAILY_MESSAGE="{data}\n\nComo foi seu dia?"
+            - DONE_MESSAGE="{date} foi {button_label} ({button_description})"
+            - MONTLY_PROGRESS_TEXT="`{date}`\n**Aqui está seu ano até agora**"
+            - VIEW_COMMAND_RESULT="Aqui está o seu Year In Pixels for `{year}`
+            - BUTTONS='[["😄","Muito Feliz","#ff6961"],["🙂","Feliz","#ffb347"],["😐","Neutro","#fdfd96"],["🙁","Triste","#48d148"],["😞","Muito Triste","#779ecb"]]'
+            - BOT_TOKEN="set_your_own"
+            - SPREADSHEET_ID="set_your_own"
         labels:
             - "com.centurylinklabs.watchtower.enable=false"
 
