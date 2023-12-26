@@ -9,10 +9,10 @@ LABEL authors="eitchtee"
 
 WORKDIR /yearinpixels
 
-COPY ./requirements.txt /
-RUN pip3 install -r /requirements.txt
-COPY ./src /
-RUN mkdir -p /data
+COPY ./requirements.txt ./
+RUN pip3 install -r ./requirements.txt
+COPY ./src ./
+RUN mkdir -p ./data
 
 
 ENTRYPOINT [ "python3", "-u", "/bot.py" ]
