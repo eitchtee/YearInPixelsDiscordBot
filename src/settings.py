@@ -23,14 +23,15 @@ MONTLY_PROGRESS_TEXT = os.environ.get(
 VIEW_COMMAND_RESULT = os.environ.get(
     "VIEW_COMMAND_RESULT", "Here's your Year In Pixels for the year `{year}`"
 )
-
+print(os.environ.get(
+        "BUTTONS"))
 BUTTONS = json.loads(
     os.environ.get(
         "BUTTONS",
         '[["😄","Very Happy","#ff6961"],["🙂","Happy","#ffb347"],["😐","Neutral","#fdfd96"],["🙁","Sad","#48d148"],["😞","Very Sad","#779ecb"]]',
     )
 )
-print(BUTTONS)
+
 DEFAULT_COLOR = os.environ.get("DEFAULT_COLOR", "#d9d9d9")
 MODEL_WORKSHEET_ID = os.environ.get("MODEL_WORKSHEET_ID", 0)
 
