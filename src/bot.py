@@ -372,7 +372,12 @@ async def daily_question():
 async def monthly_progress():
     date = Date()
     if date.date.day == 1:
-        image = download()
+        if date.date.month == 1:
+            year = date.date.year - 1
+        else:
+            year = date.date.year
+
+        image = download(year=year)
         for channel_id in settings.CHANNELS:
             try:
                 channel = bot.get_channel(channel_id)
