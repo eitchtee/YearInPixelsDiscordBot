@@ -9,7 +9,7 @@ LABEL authors="eitchtee"
 
 WORKDIR /yearinpixels
 
-COPY ./yearinpixels/requirements.txt /
+COPY ./requirements.txt /
 RUN pip3 install -r /requirements.txt
 COPY ./src /src
 
