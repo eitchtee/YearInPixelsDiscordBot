@@ -15,4 +15,4 @@ COPY ./src ./
 RUN mkdir -p ./data
 
 
-ENTRYPOINT [ "python3", "-u", "/bot.py" ]
+ENTRYPOINT [ "python3", "-u", "./bot.py" ]
