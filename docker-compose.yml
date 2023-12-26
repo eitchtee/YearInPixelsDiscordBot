@@ -1,0 +1,26 @@
+version: '2'
+services:
+    bot:
+        build: .
+        image: year_in_pixels
+        container_name: YearInPixelsDiscord
+        volumes:
+            - ./data:/data
+            - /etc/localtime:/etc/localtime:ro
+        restart: unless-stopped
+        logging:
+            driver: json-file
+            options:
+                max-file: 10
+                max-size: 200k
+        environment:
+            - PGID=1001
+            - PUID=1001
+            - TZ=America/Sao_Paulo
+        labels:
+            - "com.centurylinklabs.watchtower.enable=false"
+
+networks:
+    default:
+        name: main
+        external: true
