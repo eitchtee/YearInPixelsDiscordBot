@@ -1,8 +1,8 @@
 import datetime
 import io
-import tempfile
 from string import ascii_uppercase
 from zoneinfo import ZoneInfo
+import logging
 
 import discord
 from discord.ext import tasks, commands
@@ -25,6 +25,8 @@ import fitz
 from PIL import Image, ImageChops
 
 import settings
+
+discord.utils.setup_logging(level=logging.INFO, root=True)
 
 db = TinyDB("data/db.json")
 Q = Query()
@@ -229,8 +231,10 @@ class SentimentButton(discord.ui.Button):
         try:
             date.answer(answer=self.custom_id)
         except Exception as err:
+            logging.exception("Error when answering Daily Question")
+
             await interaction.followup.send(
-                f"🚨 Erro!\n\n```{err}```",
+                f"🚨 Err\n\n```{err}```",
                 view=AnsweredDailyQuestionView(),
             )
         else:
@@ -292,6 +296,8 @@ async def view_year(
     try:
         image = download(year=year)
     except Exception as err:
+        logging.exception("Error when downloading image")
+
         await interaction.followup.send(f"🚨 Erro!\n\n```{err}```")
     else:
         await interaction.followup.send(
@@ -318,6 +324,8 @@ async def daily_question():
             date.msg_id = msg.id
             date.save()
         except AttributeError:
+            logging.exception("Error when sending message to channel")
+
             continue
 
 
@@ -341,14 +349,15 @@ async def monthly_progress():
                     file=discord.File(image, filename="YearInPixels.png"),
                 )
             except AttributeError:
+                logging.exception("Error when sending message to channel")
                 continue
 
 
 @tasks.loop(seconds=60)
 async def debug():
-    print(monthly_progress.next_iteration)
-    print(daily_question.next_iteration)
-    print(datetime.datetime.now(tz=ZoneInfo(settings.TIMEZONE)))
+    logging.info(monthly_progress.next_iteration)
+    logging.info(daily_question.next_iteration)
+    logging.info(datetime.datetime.now(tz=ZoneInfo(settings.TIMEZONE)))
 
 
 bot.run(settings.BOT_TOKEN)
