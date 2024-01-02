@@ -319,21 +319,27 @@ class DailyQuestionView(discord.ui.View):
 
 
 class NoteModal(discord.ui.Modal, title=settings.NOTE_MODAL_TITLE):
-    note = discord.ui.TextInput(
-        label=settings.NOTE_MODAL_LABEL,
-        style=discord.TextStyle.long,
-        placeholder=settings.NOTE_MODAL_PLACEHOLDER,
-    )
+    def __init__(self, msg_id):
+        super().__init__()
+        self.date = Date(msg_id=msg_id)
+
+        self.note = discord.ui.TextInput(
+            label=settings.NOTE_MODAL_LABEL,
+            style=discord.TextStyle.long,
+            placeholder=settings.NOTE_MODAL_PLACEHOLDER,
+            default=self.date.note,
+        )
+
+        self.add_item(self.note)
 
     async def on_submit(self, interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=True)
 
-        date = Date(msg_id=interaction.message.id)
-        date.add_cell_note(note=self.note.value)
+        self.date.add_cell_note(note=self.note.value)
 
         await interaction.followup.edit_message(
             message_id=interaction.message.id,
-            content=date.get_done_text(),
+            content=self.date.get_done_text(),
             view=AnsweredDailyQuestionView(),
         )
 
@@ -360,7 +366,7 @@ class AnsweredDailyQuestionView(discord.ui.View):
         custom_id="note",
     )
     async def note(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_modal(NoteModal())
+        await interaction.response.send_modal(NoteModal(msg_id=interaction.message.id))
 
     @discord.ui.button(
         label=settings.EDIT_BUTTON_TEXT,
