@@ -142,54 +142,65 @@ class Date:
             datetime.datetime.strftime(date, settings.DATE_FRMT) if date else None
         )
 
-        if not date or not self.date or not self.formatted_date:
-            self.get_date()
+        self._answer = ""
+        self.note = ""
+
+        self._spreadsheet = None
+        self._worksheet = None
+
+        self.get_date()
 
     def get_date(self, new: bool = False) -> None:
         if self.msg_id and not new:
             msg_data = db.get(Q.msg_id == self.msg_id)
+
             if msg_data:
-                if isinstance(msg_data, Document):
-                    self.formatted_date = msg_data["date"]
-                    self.date = datetime.datetime.strptime(
-                        self.formatted_date, settings.DATE_FRMT
-                    )
-                else:
-                    self.formatted_date = msg_data[0]["date"]
-                    self.date = datetime.datetime.strptime(
-                        self.formatted_date, settings.DATE_FRMT
-                    )
+                if not isinstance(msg_data, Document):
+                    msg_data = msg_data[0]
+
+                self.formatted_date = msg_data["date"]
+                self.date = datetime.datetime.strptime(
+                    self.formatted_date, settings.DATE_FRMT
+                )
+                self.note = msg_data.get("note", "")
+                self._answer = msg_data.get("answer", "")
             else:
                 self.get_date(new=True)
 
         else:
-            self.date = datetime.date.today()
+            self.date = self.date if self.date else datetime.date.today()
             self.formatted_date = datetime.datetime.strftime(
                 self.date, settings.DATE_FRMT
             )
 
     def save(self) -> None:
-        db.insert({"msg_id": self.msg_id, "date": self.formatted_date})
+        db.upsert(
+            {
+                "msg_id": self.msg_id,
+                "date": self.formatted_date,
+                "answer": self._answer,
+                "note": self.note,
+            },
+            Q.msg_id == self.msg_id,
+        )
+
+    def add_cell_note(self, note: str):
+        self.note = note
+
+        cell_label, cell_range = self.sheet_range
+
+        self.worksheet.insert_note(cell=cell_label, content=note)
+
+        self.save()
 
     def answer(self, answer: str):
+        self._answer = answer
+
         cell_label, cell_range = self.sheet_range
         options = {x[1]: x[2] for x in settings.BUTTONS}
         color = gs_f.Color(
             *hex_to_unit_rgb(options.get(answer, settings.DEFAULT_COLOR))
         )
-
-        spreadsheet = settings.gc.open_by_key(settings.SPREADSHEET_ID)
-        try:
-            worksheet = spreadsheet.worksheet(str(self.date.year))
-        except gspread.exceptions.WorksheetNotFound:
-            new_index = len(spreadsheet.worksheets())
-            new_worksheet = spreadsheet.duplicate_sheet(
-                source_sheet_id=settings.MODEL_WORKSHEET_ID,
-                insert_sheet_index=0,
-                new_sheet_id=new_index,
-                new_sheet_name=str(self.date.year),
-            )
-            worksheet = generate_table(year=self.date.year, worksheet=new_worksheet)
 
         cell_format = CellFormat(
             backgroundColor=color,
@@ -202,22 +213,58 @@ class Date:
                 right=Border("SOLID", Color(0.40062, 0.40062, 0.40062)),
             ),
         )
-        worksheet.update_acell(cell_label, answer)
-        format_cell_range(worksheet, cell_range, cell_format)
+        self.worksheet.update_acell(cell_label, answer)
+        format_cell_range(self.worksheet, cell_range, cell_format)
+
+        self.save()
+
+    @property
+    def worksheet(self):
+        if not self._spreadsheet and not self._worksheet:
+            self._spreadsheet = settings.gc.open_by_key(settings.SPREADSHEET_ID)
+            try:
+                self._worksheet = self._spreadsheet.worksheet(str(self.date.year))
+            except gspread.exceptions.WorksheetNotFound:
+                new_index = len(self._spreadsheet.worksheets())
+                new_worksheet = self._spreadsheet.duplicate_sheet(
+                    source_sheet_id=settings.MODEL_WORKSHEET_ID,
+                    insert_sheet_index=0,
+                    new_sheet_id=new_index,
+                    new_sheet_name=str(self.date.year),
+                )
+                self._worksheet = generate_table(
+                    year=self.date.year, worksheet=new_worksheet
+                )
+
+        return self._worksheet
 
     @property
     def daily_question_text(self) -> str:
         return settings.DAILY_MESSAGE.format(date=self.formatted_date)
 
-    def get_done_text(self, button: discord.ui.Button) -> str:
-        button_label = button.emoji if button.emoji else button.label
-        button_description = button.custom_id
+    def get_done_text(self, button: discord.ui.Button = None) -> str:
+        if button:
+            button_label = button.emoji if button.emoji else button.label
+            button_description = button.custom_id
+        else:
+            button_label = {x[1]: x[0] for x in settings.BUTTONS}.get(self._answer, "❔")
+            button_description = self._answer
 
-        return settings.DONE_MESSAGE.format(
-            date=self.formatted_date,
-            button_label=button_label,
-            button_description=button_description,
-        )
+        if self.note:
+            return (
+                settings.DONE_MESSAGE.format(
+                    date=self.formatted_date,
+                    button_label=button_label,
+                    button_description=button_description,
+                )
+                + f"\n\n📝 _{self.note}_"
+            )
+        else:
+            return settings.DONE_MESSAGE.format(
+                date=self.formatted_date,
+                button_label=button_label,
+                button_description=button_description,
+            )
 
     @property
     def sheet_range(self) -> (str, str):
@@ -271,9 +318,49 @@ class DailyQuestionView(discord.ui.View):
             self.add_item(button)
 
 
+class NoteModal(discord.ui.Modal, title=settings.NOTE_MODAL_TITLE):
+    note = discord.ui.TextInput(
+        label=settings.NOTE_MODAL_LABEL,
+        style=discord.TextStyle.long,
+        placeholder=settings.NOTE_MODAL_PLACEHOLDER,
+    )
+
+    async def on_submit(self, interaction: discord.Interaction):
+        await interaction.response.defer(ephemeral=True)
+
+        date = Date(msg_id=interaction.message.id)
+        date.add_cell_note(note=self.note.value)
+
+        await interaction.followup.edit_message(
+            message_id=interaction.message.id,
+            content=date.get_done_text(),
+            view=AnsweredDailyQuestionView(),
+        )
+
+    async def on_error(
+        self, interaction: discord.Interaction, error: Exception
+    ) -> None:
+        if not interaction.response.is_done():
+            await interaction.response.send_message(
+                f"🚨 Err!\n\n```{error}```", ephemeral=True
+            )
+        else:
+            await interaction.followup.send(f"🚨 Err!\n\n```{error}```", ephemeral=True)
+
+        logger.exception("Error when adding note")
+
+
 class AnsweredDailyQuestionView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
+
+    @discord.ui.button(
+        label=settings.NOTE_BUTTON_TEXT,
+        style=discord.ButtonStyle.green,
+        custom_id="note",
+    )
+    async def note(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_modal(NoteModal())
 
     @discord.ui.button(
         label=settings.EDIT_BUTTON_TEXT,
