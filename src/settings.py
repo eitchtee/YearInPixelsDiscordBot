@@ -9,6 +9,7 @@ CHANNELS = os.environ.get("CHANNELS", None)
 CHANNELS = [int(c) for c in CHANNELS.split(",")] if CHANNELS else []
 
 EDIT_BUTTON_TEXT = os.environ.get("EDIT_BUTTON_TEXT", "Edit")
+NOTE_BUTTON_TEXT = os.environ.get("NOTE_BUTTON_TEXT", "Add note")
 
 DAILY_MESSAGE_HOUR = int(os.environ.get("DAILY_MESSAGE_HOUR", 23))
 DAILY_MESSAGE_MINUTE = int(os.environ.get("DAILY_MESSAGE_MINUTE", 0))
@@ -19,6 +20,9 @@ DAILY_MESSAGE = os.environ.get("DAILY_MESSAGE", "{date}\n\nHow was your day?").r
 DONE_MESSAGE = os.environ.get(
     "DONE_MESSAGE", "{date} was {button_label} ({button_description})"
 ).replace(r"\n", "\n")
+NOTE_MODAL_TITLE = os.environ.get("NOTE_MODAL_TITLE", "Add a note to this day")
+NOTE_MODAL_LABEL = os.environ.get("NOTE_MODAL_TEXT", "How was this day?")
+NOTE_MODAL_PLACEHOLDER = os.environ.get("NOTE_MODAL_PLACEHOLDER", "📝...")
 MONTLY_PROGRESS_TEXT = os.environ.get(
     "MONTLY_PROGRESS_TEXT", "**Here's your year until now ({date})**"
 ).replace(r"\n", "\n")
