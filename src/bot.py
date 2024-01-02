@@ -393,7 +393,7 @@ async def on_ready():
 async def view_year(
     interaction: discord.Interaction, year: int = datetime.date.today().year
 ):
-    await interaction.response.defer()
+    await interaction.response.defer(ephemeral=True)
     try:
         image = download(year=year)
     except Exception as err:
