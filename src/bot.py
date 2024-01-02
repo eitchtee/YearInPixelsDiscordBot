@@ -178,9 +178,7 @@ class Date:
             *hex_to_unit_rgb(options.get(answer, settings.DEFAULT_COLOR))
         )
 
-        spreadsheet = settings.gc.open_by_key(
-            "1vylB7O4cdCKn7YYCyEpdWQulpCKiSzcGFR_zmxU0rXo"
-        )
+        spreadsheet = settings.gc.open_by_key(settings.SPREADSHEET_ID)
         try:
             worksheet = spreadsheet.worksheet(str(self.date.year))
         except gspread.exceptions.WorksheetNotFound:
